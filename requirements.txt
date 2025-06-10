@@ -1,6 +1,6 @@
 flask
 flask-cors
-sqlite3 ; this is part of Python stdlib, so no need to install separately
+sqlite3
 lxml
 mysql
 pandas
