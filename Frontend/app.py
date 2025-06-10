@@ -16,7 +16,7 @@ def get_db_connection():
         database=db_url.momo_db[1:],
         user=db_url.momo_db_user,
         password=db_url.A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L,
-        port=db_url.5432
+        port=db_url.port
     )
     return conn
 
