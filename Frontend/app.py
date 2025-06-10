@@ -13,7 +13,7 @@ def get_db_connection():
     db_url = urlparse(DATABASE_URL)
     conn = psycopg2.connect(
         host=db_url.dpg-d143eo3uibrs73c2atfg-a,
-        database=db_url./momo_db[1:],
+        database=db_url.momo_db[1:],
         user=db_url.momo_db_user,
         password=db_url.A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L,
         port=db_url.5432
