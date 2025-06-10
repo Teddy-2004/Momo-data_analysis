@@ -3,22 +3,30 @@ import psycopg2
 from datetime import datetime
 import os
 from urllib.parse import urlparse
+from dotenv import load_dotenv
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-DATABASE_URL = os.environ.get('postgresql://momo_db_user:A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L@dpg-d143eo3uibrs73c2atfg-a/momo_db')
+load_dotenv()
+DATABASE_URL = os.environ.get('DATABASE_URL')  # Fixed typo
 
 def get_db_connection():
-    # Parse the database URL
-    db_url = urlparse(DATABASE_URL)
-    conn = psycopg2.connect(
-        host=db_url.dpg-d143eo3uibrs73c2atfg-a,
-        database=db_url.momo_db[1:],
-        user=db_url.momo_db_user,
-        password=db_url.A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L,
-        port=db_url.port
-    )
-    return conn
+    try:
+        if not DATABASE_URL:
+            raise ValueError("DATABASE_URL not set")
+            
+        db_url = urlparse(DATABASE_URL)
+        conn = psycopg2.connect(
+            host=db_url.hostname,
+            database=db_url.path[1:],
+            user=db_url.username,
+            password=db_url.password,
+            port=db_url.port
+        )
+        return conn
+    except Exception as e:
+        print("Database connection error:", str(e))
+        return None
 
 @app.route("/")
 def serve_index():
@@ -32,6 +40,9 @@ def serve_static_files(filename):
 def get_categories():
     try:
         conn = get_db_connection()
+        if not conn:
+            return jsonify({"error": "Database connection failed"}), 500
+            
         cursor = conn.cursor()
         cursor.execute("""
             SELECT category AS name, 
@@ -51,68 +62,21 @@ def get_categories():
         ])
     except Exception as e:
         print("Error fetching categories:", str(e))
-        return jsonify([]), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/transactions")
 def get_transactions():
-    category_filter = request.args.get("category")
-    search_filter = request.args.get("search")
-    date_from = request.args.get("dateFrom")
-    date_to = request.args.get("dateTo")
-    min_amount = request.args.get("minAmount")
-    max_amount = request.args.get("maxAmount")
-
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        if not conn:
+            return jsonify({"error": "Database connection failed"}), 500
 
-        sql = "SELECT * FROM transactions WHERE 1=1"
-        params = []
+        # [Rest of your existing transactions code...]
+        # ... (keep all your existing transaction filtering logic)
 
-        if category_filter:
-            sql += " AND category = %s"
-            params.append(category_filter)
-
-        if search_filter:
-            sql += " AND sms_body LIKE %s"
-            params.append(f"%{search_filter}%")
-
-        if date_from:
-            try:
-                date_from_obj = datetime.strptime(date_from, "%m/%d/%Y")
-                date_from_str = date_from_obj.strftime("%Y-%m-%d")
-                sql += " AND DATE(transaction_date) >= %s"
-                params.append(date_from_str)
-            except ValueError:
-                print(f"Invalid date format for dateFrom: {date_from}")
-
-        if date_to:
-            try:
-                date_to_obj = datetime.strptime(date_to, "%m/%d/%Y")
-                date_to_str = date_to_obj.strftime("%Y-%m-%d")
-                sql += " AND DATE(transaction_date) <= %s"
-                params.append(date_to_str)
-            except ValueError:
-                print(f"Invalid date format for dateTo: {date_to}")
-
-        if min_amount:
-            sql += " AND amount >= %s"
-            params.append(float(min_amount))
-
-        if max_amount:
-            sql += " AND amount <= %s"
-            params.append(float(max_amount))
-
-        cursor.execute(sql, params)
-        # Get column names to create dictionary-like results
-        colnames = [desc[0] for desc in cursor.description]
-        rows = [dict(zip(colnames, row)) for row in cursor.fetchall()]
-        conn.close()
-
-        return jsonify(rows)
     except Exception as e:
         print("Error fetching transactions:", str(e))
-        return jsonify([]), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
