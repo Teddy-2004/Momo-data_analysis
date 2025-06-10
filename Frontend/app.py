@@ -11,13 +11,13 @@ DATABASE_URL = os.environ.get('postgresql://momo_db_user:A1hraJB9Wl4XLvcrBV2NIRx
 def get_db_connection():
     # Parse the database URL
     db_url = urlparse(DATABASE_URL)
-    conn = psycopg2.connect (
+    conn = psycopg2.connect(
         host=db_url.dpg-d143eo3uibrs73c2atfg-a,
-        database=db_url.postgresql://momo_db_user:A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L@dpg-d143eo3uibrs73c2atfg-a/momo_db[1:],
+        database=db_url./momo_db[1:],
         user=db_url.momo_db_user,
         password=db_url.A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L,
         port=db_url.5432
-        )
+    )
     return conn
 
 @app.route("/")
