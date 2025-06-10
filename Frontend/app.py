@@ -1,15 +1,25 @@
 from flask import Flask, send_from_directory, request, jsonify
-import mysql.connector
+import psycopg2
 from datetime import datetime
+import os
+from urllib.parse import urlparse
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "momo_user",
-    "password": "Momo@1234",
-    "database": "momo_db"
-}
+# Get database URL from environment variable (set in Render)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+def get_db_connection():
+    # Parse the database URL
+    db_url = urlparse(DATABASE_URL)
+    conn = psycopg2.connect(
+        host=db_url.hostname,
+        database=db_url.path[1:],  # Remove leading '/'
+        user=db_url.username,
+        password=db_url.password,
+        port=db_url.port
+    )
+    return conn
 
 @app.route("/")
 def serve_index():
@@ -22,10 +32,12 @@ def serve_static_files(filename):
 @app.route("/api/categories")
 def get_categories():
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        cursor = conn.cursor(dictionary=True)
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("""
-            SELECT category AS name, SUM(amount) AS total_amount, COUNT(*) AS total_transactions
+            SELECT category AS name, 
+                   SUM(amount) AS total_amount, 
+                   COUNT(*) AS total_transactions
             FROM transactions
             GROUP BY category
         """)
@@ -33,7 +45,9 @@ def get_categories():
         conn.close()
 
         return jsonify([
-            {"name": row["name"] or "Unknown", "amount": float(row["total_amount"] or 0), "transactions": row["total_transactions"] or 0}
+            {"name": row[0] or "Unknown", 
+             "amount": float(row[1] or 0), 
+             "transactions": row[2] or 0}
             for row in rows
         ])
     except Exception as e:
@@ -50,8 +64,8 @@ def get_transactions():
     max_amount = request.args.get("maxAmount")
 
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        cursor = conn.cursor(dictionary=True)
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
         sql = "SELECT * FROM transactions WHERE 1=1"
         params = []
@@ -84,14 +98,16 @@ def get_transactions():
 
         if min_amount:
             sql += " AND amount >= %s"
-            params.append(min_amount)
+            params.append(float(min_amount))
 
         if max_amount:
             sql += " AND amount <= %s"
-            params.append(max_amount)
+            params.append(float(max_amount))
 
         cursor.execute(sql, params)
-        rows = cursor.fetchall()
+        # Get column names to create dictionary-like results
+        colnames = [desc[0] for desc in cursor.description]
+        rows = [dict(zip(colnames, row)) for row in cursor.fetchall()]
         conn.close()
 
         return jsonify(rows)
