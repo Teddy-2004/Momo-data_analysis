@@ -6,19 +6,18 @@ from urllib.parse import urlparse
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-# Get database URL from environment variable (set in Render)
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('postgresql://momo_db_user:A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L@dpg-d143eo3uibrs73c2atfg-a/momo_db')
 
 def get_db_connection():
     # Parse the database URL
     db_url = urlparse(DATABASE_URL)
-    conn = psycopg2.connect(
-        host=db_url.hostname,
-        database=db_url.path[1:],  # Remove leading '/'
-        user=db_url.username,
-        password=db_url.password,
-        port=db_url.port
-    )
+    conn = psycopg2.connect (
+        host=db_url.dpg-d143eo3uibrs73c2atfg-a,
+        database=db_url.postgresql://momo_db_user:A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L@dpg-d143eo3uibrs73c2atfg-a/momo_db[1:],
+        user=db_url.momo_db_user,
+        password=db_url.A1hraJB9Wl4XLvcrBV2NIRxGGrSAMF0L,
+        port=db_url.5432
+        )
     return conn
 
 @app.route("/")
