@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Airtime",
+    "amount": 36200,
+    "transactions": 15,
+    "categoryId": "airtime"
+  },
+  {
+    "name": "Bank Deposit",
+    "amount": 1101200,
+    "transactions": 248,
+    "categoryId": "bank_deposit"
+  },
+  {
+    "name": "Bundles and Packs",
+    "amount": 40400,
+    "transactions": 21,
+    "categoryId": "bundles"
+  },
+  {
+    "name": "Cash Power",
+    "amount": 61000,
+    "transactions": 12,
+    "categoryId": "cash_power"
+  },
+  {
+    "name": "Money Received",
+    "amount": 5366753,
+    "transactions": 63,
+    "categoryId": "incoming_money"
+  },
+  {
+    "name": "Payments to Code",
+    "amount": 5194492,
+    "transactions": 60,
+    "categoryId": "code_holders"
+  },
+  {
+    "name": "Transfers to Number",
+    "amount": 9731151,
+    "transactions": 585,
+    "categoryId": "mobile_transfer"
+  },
+  {
+    "name": "Withdrawal from Agent",
+    "amount": 94000,
+    "transactions": 7,
+    "categoryId": "agent_withdrawal"
+  }
+]

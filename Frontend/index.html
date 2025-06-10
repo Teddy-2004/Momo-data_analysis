@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MoMo Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="navbar-brand">
+      <h1>MoMo Dashboard</h1>
+    </div>
+    <nav class="nav-search">
+      <input type="text" id="searchBar" placeholder="Search">
+    </nav>
+  </header>
+
+  <section class="hero-section" id="home">
+    <div class="hero-content">
+      <h2 style="white-space: nowrap;">Welcome to the MoMo Dashboard</h2>
+      <a href="#dashboard" class="hero-btn">View Dashboard</a>
+    </div>
+
+    <div class="filter-container">
+      <div class="filters">
+        <label for="typeFilter">Transaction Type</label>
+        <select id="typeFilter">
+          <option value="">All Types</option>
+          <option value="Payments to Code">Payments to Code</option>
+          <option value="Transfers to Number">Transfers to Number</option>
+          <option value="Money Received">Money Received</option>
+          <option value="Withdrawals from Agents">Withdrawals from Agents</option>
+          <option value="Internet and Voice Bundle Purchases">Internet and Voice Bundle Purchases</option>
+          <option value="Reversed">Reversed</option>
+          <option value="MTN SMS">MTN SMS</option>
+          <option value="Failed">Failed</option>
+        </select>
+
+        <label for="dateFrom">Date Range</label>
+        <input type="date" id="dateFrom">
+        <input type="date" id="dateTo">
+
+        <label for="minAmount">Amount Range</label>
+        <input type="number" id="minAmount" placeholder="Min">
+        <input type="number" id="maxAmount" placeholder="Max">
+
+        <button id="filterBtn" class="filter-btn">Apply Filters</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboard" class="container">
+    <table id="category-table" border="1">
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Amount</th>
+      <th>Transactions</th>
+    </tr>
+  </thead>
+  <tbody id="tableRow">
+
+  </tbody>
+</table>
+
+
+    <div class="graph-section">
+      <canvas id="momoChart"></canvas>
+    </div>
+  </section>
+
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2025 MoMo. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
