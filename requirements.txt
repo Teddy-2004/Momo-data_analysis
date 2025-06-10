@@ -3,5 +3,3 @@ flask-cors
 lxml
 mysql
 pandas
-csv
-re
