@@ -1,6 +1,6 @@
 flask
 flask-cors
 lxml
-mysql
+mysql-connector-python
 gunicorn==20.1.0
 pandas
