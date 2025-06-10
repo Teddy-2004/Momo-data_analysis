@@ -1,7 +1,6 @@
 flask
 flask-cors
 lxml
-mysql-connector-python
 gunicorn==20.1.0
 pandas
 psycopg2-binary
