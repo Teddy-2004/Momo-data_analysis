@@ -65,18 +65,54 @@ def get_categories():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/transactions")
+@app.route("/api/transactions")
 def get_transactions():
     try:
         conn = get_db_connection()
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
 
-        # [Rest of your existing transactions code...]
-        # ... (keep all your existing transaction filtering logic)
+        cursor = conn.cursor()
+
+        # Get query parameters
+        offset = int(request.args.get("offset", 0))
+        limit = int(request.args.get("limit", 20))
+        category = request.args.get("category")
+
+        if category:
+            cursor.execute("""
+                SELECT transaction_id, transaction_date, sms_body, amount, category
+                FROM transactions
+                WHERE category = %s
+                ORDER BY transaction_date DESC
+                LIMIT %s OFFSET %s
+            """, (category, limit, offset))
+        else:
+            cursor.execute("""
+                SELECT transaction_id, transaction_date, sms_body, amount, category
+                FROM transactions
+                ORDER BY transaction_date DESC
+                LIMIT %s OFFSET %s
+            """, (limit, offset))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        return jsonify([
+            {
+                "id": row[0],
+                "date": row[1].isoformat() if row[1] else None,
+                "message": row[2],
+                "amount": float(row[3]) if row[3] else 0,
+                "category": row[4] or "Unknown"
+            }
+            for row in rows
+        ])
 
     except Exception as e:
         print("Error fetching transactions:", str(e))
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
