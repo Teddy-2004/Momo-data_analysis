@@ -159,9 +159,4 @@ Contributions are welcome! Feel free to open issues or PRs to improve functional
 📄 License
 MIT License — free to use, modify, and distribute.
 
-yaml
-Copy code
-
----
-
-Let me know if you want this in PDF, or need a version customized for Heroku or Docker too.
+Tedla Tesfaye Godebo 2025
