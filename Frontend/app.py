@@ -65,7 +65,6 @@ def get_categories():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/transactions")
-@app.route("/api/transactions")
 def get_transactions():
     try:
         conn = get_db_connection()
@@ -73,38 +72,60 @@ def get_transactions():
             return jsonify({"error": "Database connection failed"}), 500
 
         cursor = conn.cursor()
-
-        # Get query parameters
         offset = int(request.args.get("offset", 0))
-        limit = int(request.args.get("limit", 20))
+        limit = int(request.args.get("limit", 1000))  # You can adjust as needed
+
+        base_query = """
+            SELECT transaction_id, transaction_date, sms_body, amount, category
+            FROM transactions
+            WHERE 1=1
+        """
+        params = []
+
         category = request.args.get("category")
-
         if category:
-            cursor.execute("""
-                SELECT transaction_id, transaction_date, sms_body, amount, category
-                FROM transactions
-                WHERE category = %s
-                ORDER BY transaction_date DESC
-                LIMIT %s OFFSET %s
-            """, (category, limit, offset))
-        else:
-            cursor.execute("""
-                SELECT transaction_id, transaction_date, sms_body, amount, category
-                FROM transactions
-                ORDER BY transaction_date DESC
-                LIMIT %s OFFSET %s
-            """, (limit, offset))
+            base_query += " AND category = %s"
+            params.append(category)
 
+        date_from = request.args.get("dateFrom")
+        if date_from:
+            base_query += " AND transaction_date >= %s"
+            params.append(date_from)
+
+        date_to = request.args.get("dateTo")
+        if date_to:
+            base_query += " AND transaction_date <= %s"
+            params.append(date_to)
+
+        min_amount = request.args.get("minAmount")
+        if min_amount:
+            base_query += " AND amount >= %s"
+            params.append(float(min_amount))
+
+        max_amount = request.args.get("maxAmount")
+        if max_amount:
+            base_query += " AND amount <= %s"
+            params.append(float(max_amount))
+
+        search = request.args.get("search")
+        if search:
+            base_query += " AND sms_body ILIKE %s"
+            params.append(f"%{search}%")
+
+        base_query += " ORDER BY transaction_date DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+
+        cursor.execute(base_query, params)
         rows = cursor.fetchall()
         conn.close()
 
         return jsonify([
             {
-                "id": row[0],
-                "date": row[1].isoformat() if row[1] else None,
-                "message": row[2],
-                "amount": float(row[3]) if row[3] else 0,
-                "category": row[4] or "Unknown"
+                "transaction_id": row[0],
+                "transaction_date": row[1],
+                "sms_body": row[2],
+                "amount": float(row[3]) if row[3] is not None else 0,
+                "category": row[4],
             }
             for row in rows
         ])

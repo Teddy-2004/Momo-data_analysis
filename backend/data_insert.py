@@ -1,36 +1,40 @@
 import csv
-import mysql.connector
+import psycopg2
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 
-CSV_FILE_PATH = "MoMo-Data-Analysis/Backend/extracted_transactions_final.csv"
+# Load your Render DATABASE_URL from .env
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="momo_user",
-    password="Momo@1234",
-    database="momo_db"
-)
+CSV_FILE_PATH = "/home/teddy/Momo-data_analysis/backend/extracted_transactions_final.csv"
+
+# Connect to PostgreSQL on Render
+conn = psycopg2.connect(DATABASE_URL)
 cursor = conn.cursor()
 
 with open(CSV_FILE_PATH, "r", encoding="utf-8") as f:
-    reader = csv.DictReader(f, quotechar='"')
+    reader = csv.DictReader(f)
     for row in reader:
-        transaction_id = row["TransactionID"].strip() if row["TransactionID"].strip() else None
+        transaction_id = row["TransactionID"].strip() or None
         transaction_date_str = row["Date"].strip()
-        sms_body = row["Body"].strip() if row["Body"].strip() else None
+        sms_body = row["Body"].strip() or None
         amount_str = row["Amount"].strip()
-        category = row["Category"].strip() if row["Category"].strip() else None
+        category = row["Category"].strip() or None
 
+        # Parse date
         transaction_date = None
         if transaction_date_str:
             try:
-                transaction_date = datetime.strptime(transaction_date_str, "%m/%d/%Y").strftime("%Y-%m-%d")
+                transaction_date = datetime.strptime(transaction_date_str, "%m/%d/%Y").date()
             except ValueError:
-                print(f"Skipping row with invalid date format: {transaction_date_str}")
+                print(f"Skipping row with invalid date: {transaction_date_str}")
                 continue
 
+        # Parse amount
         amount = None
-        if amount_str and amount_str.lower() != "unknown":
+        if amount_str.lower() != "unknown":
             try:
                 amount = float(amount_str.replace(",", ""))
             except ValueError:
@@ -46,12 +50,12 @@ with open(CSV_FILE_PATH, "r", encoding="utf-8") as f:
                     category
                 )
                 VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (transaction_id) DO NOTHING
             """, (transaction_id, transaction_date, sms_body, amount, category))
-
-        except mysql.connector.IntegrityError as e:
-            print(f"Database error: {e}. Skipping this row...")
+        except Exception as e:
+            print(f"Error inserting row: {e}")
 
 conn.commit()
 cursor.close()
 conn.close()
-print("Data inserted successfully!")
+print("✅ Data inserted successfully!")
